@@ -8,6 +8,7 @@ use App\Models\LogBacaan;
 use App\Models\DokumentasiLiterasi;
 use App\Http\Requests\StoreProgramLiterasiRequest;
 use App\Http\Requests\VerifikasiJurnalRequest;
+use App\Http\Requests\UploadDokumentasiLiterasiRequest;
 use App\Exports\GLSExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,8 +31,12 @@ class GLSController extends Controller
             'jurnal_pending' => LogBacaan::where('status_verifikasi', 'pending')->count(),
         ];
 
+        $monthExpression = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', tanggal_baca)"
+            : "DATE_FORMAT(tanggal_baca, '%Y-%m')";
+
         // Data Grafik (6 Bulan Terakhir Log Bacaan)
-        $chartData = LogBacaan::select(DB::raw("DATE_FORMAT(tanggal_baca, '%Y-%m') as bulan"), DB::raw('count(*) as total'))
+        $chartData = LogBacaan::select(DB::raw($monthExpression . ' as bulan'), DB::raw('count(*) as total'))
             ->where('status_verifikasi', 'disetujui')
             ->where('tanggal_baca', '>=', Carbon::now()->subMonths(5)->startOfMonth())
             ->groupBy('bulan')
@@ -117,14 +122,8 @@ class GLSController extends Controller
     // ============================================
     // UPLOAD DOKUMENTASI PROGRAM
     // ============================================
-    public function uploadDokumentasi(Request $request, $id)
+    public function uploadDokumentasi(UploadDokumentasiLiterasiRequest $request, $id)
     {
-        $request->validate([
-            'tipe_file' => 'required|in:foto,pdf',
-            'file' => 'required|file|max:5120', // Max 5MB
-            'keterangan' => 'nullable|string|max:255'
-        ]);
-
         $program = ProgramLiterasi::findOrFail($id);
         
         $path = $request->file('file')->store('public/gls_dokumentasi');

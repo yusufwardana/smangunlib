@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\ActivateLicenseRequest;
 use App\Services\LicenseService;
 use App\Models\License;
 
@@ -22,14 +22,8 @@ class LicenseController extends Controller
         return view('system.license.index', compact('currentLicense', 'history'));
     }
 
-    public function activate(Request $request)
+    public function activate(ActivateLicenseRequest $request)
     {
-        $request->validate([
-            'license_key' => 'required|string',
-            'nama_sekolah' => 'required|string',
-            'email' => 'required|email',
-        ]);
-
         try {
             $this->licenseService->activate(
                 $request->license_key,

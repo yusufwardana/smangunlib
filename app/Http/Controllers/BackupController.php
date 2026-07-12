@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\ProcessBackupRequest;
 use App\Services\BackupService;
 use App\Models\Backup;
 use Illuminate\Support\Facades\Storage;
@@ -23,9 +23,9 @@ class BackupController extends Controller
         return view('system.backup.index', compact('backups'));
     }
 
-    public function process(Request $request)
+    public function process(ProcessBackupRequest $request)
     {
-        $tipe = $request->tipe;
+        $tipe = $request->validated('tipe');
         
         try {
             $result = [];

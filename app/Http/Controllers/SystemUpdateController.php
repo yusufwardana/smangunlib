@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\UploadSystemUpdateRequest;
 use App\Services\SystemUpdateService;
 use App\Models\SystemUpdate;
 use Illuminate\Support\Facades\Log;
@@ -22,12 +22,8 @@ class SystemUpdateController extends Controller
         return view('system.update.index', compact('updates'));
     }
 
-    public function upload(Request $request)
+    public function upload(UploadSystemUpdateRequest $request)
     {
-        $request->validate([
-            'update_file' => 'required|file|mimes:zip|max:50000', // 50MB
-        ]);
-
         try {
             $zipPath = $request->file('update_file')->getRealPath();
             

@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -12,17 +16,26 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $key = Str::lower($request->input('email')).'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            throw ValidationException::withMessages([
+                'email' => 'Terlalu banyak percobaan login. Coba lagi dalam '.RateLimiter::availableIn($key).' detik.',
+            ]);
+        }
+
+        $credentials = $request->validated();
+        unset($credentials['remember']);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            RateLimiter::clear($key);
             $request->session()->regenerate();
             return redirect()->intended('/');
         }
+
+        RateLimiter::hit($key, 60);
 
         return back()->withErrors([
             'email' => 'Email atau password salah.',

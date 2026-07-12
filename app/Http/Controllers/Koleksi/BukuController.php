@@ -79,7 +79,7 @@ class BukuController extends Controller
         $data['is_digital'] = $request->has('is_digital');
 
         if ($request->hasFile('cover_image')) {
-            $data['cover_image'] = $request->file('cover_image')->store('public/covers');
+            $data['cover_image'] = $request->file('cover_image')->store('covers', 'public');
         }
 
         if ($request->hasFile('file_digital') && $data['is_digital']) {
@@ -120,7 +120,7 @@ class BukuController extends Controller
             if ($buku->cover_image && Storage::exists($buku->cover_image)) {
                 Storage::delete($buku->cover_image);
             }
-            $data['cover_image'] = $request->file('cover_image')->store('public/covers');
+            $data['cover_image'] = $request->file('cover_image')->store('covers', 'public');
         }
 
         if ($request->hasFile('file_digital') && $data['is_digital']) {

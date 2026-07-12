@@ -25,6 +25,8 @@ class SystemUpdateService
     {
         $zip = new ZipArchive;
         if ($zip->open($zipPath) === TRUE) {
+            $this->validateZipEntries($zip);
+
             // Check for manifest
             if ($zip->locateName('manifest.json') === false) {
                 $zip->close();
@@ -40,15 +42,76 @@ class SystemUpdateService
             $manifestContent = File::get($tempDir . '/manifest.json');
             $manifest = json_decode($manifestContent, true);
 
-            if (!isset($manifest['version']) || !isset($manifest['checksum'])) {
+            if (!is_array($manifest) || !isset($manifest['version']) || !isset($manifest['checksum'])) {
                 File::deleteDirectory($tempDir);
                 throw new \Exception('Struktur manifest.json tidak lengkap.');
+            }
+
+            $checksum = $this->hashExtractedPayload($tempDir);
+            if (!hash_equals((string) $manifest['checksum'], $checksum)) {
+                File::deleteDirectory($tempDir);
+                throw new \Exception('Checksum file update tidak valid.');
             }
 
             return ['path' => $tempDir, 'manifest' => $manifest];
         } else {
             throw new \Exception('Gagal membuka file ZIP.');
         }
+    }
+
+    protected function validateZipEntries(ZipArchive $zip): void
+    {
+        $allowedRoots = ['app/', 'bootstrap/', 'config/', 'database/', 'public/', 'resources/', 'routes/', 'manifest.json'];
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = str_replace('\\', '/', (string) $zip->getNameIndex($i));
+            $normalized = ltrim($name, '/');
+
+            if ($normalized === '' || str_contains($normalized, '../') || str_starts_with($name, '/') || preg_match('/^[A-Za-z]:\//', $name)) {
+                throw new \Exception('File update mengandung path tidak aman: '.$name);
+            }
+
+            $isAllowed = false;
+            foreach ($allowedRoots as $root) {
+                if ($normalized === $root || str_starts_with($normalized, $root)) {
+                    $isAllowed = true;
+                    break;
+                }
+            }
+
+            if (! $isAllowed) {
+                throw new \Exception('File update mengandung lokasi tidak diizinkan: '.$name);
+            }
+        }
+    }
+
+    protected function hashExtractedPayload(string $tempDir): string
+    {
+        $hashContext = hash_init('sha256');
+        $files = [];
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($tempDir, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile()) {
+                $relativePath = str_replace('\\', '/', substr($file->getRealPath(), strlen($tempDir) + 1));
+                if ($relativePath !== 'manifest.json') {
+                    $files[$relativePath] = $file->getRealPath();
+                }
+            }
+        }
+
+        ksort($files);
+
+        foreach ($files as $relativePath => $path) {
+            hash_update($hashContext, $relativePath."\n");
+            hash_update_file($hashContext, $path);
+            hash_update($hashContext, "\n");
+        }
+
+        return hash_final($hashContext);
     }
 
     public function backupCurrentCore()

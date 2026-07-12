@@ -38,7 +38,7 @@
                 <div class="school-name">PERPUSTAKAAN SMAN GUN</div>
                 <div class="book-title">{{ Str::limit($buku->judul, 30) }}</div>
                 <div class="barcode">
-                    <!-- Note: In real app, this renders actual SVG/IMG using Milon/Barcode: {!! DNS1D::getBarcodeSVG($eks->nomor_barcode, 'C128', 2, 40) !!} -->
+                    {{-- Note: In real app, this renders actual SVG/IMG using Milon/Barcode, e.g. DNS1D::getBarcodeSVG($eks->nomor_barcode, 'C128', 2, 40) --}}
                     <img src="https://barcode.tec-it.com/barcode.ashx?data={{ $eks->nomor_barcode }}&code=Code128&translate-esc=on" alt="Barcode" style="max-height: 40px;">
                 </div>
                 <div style="font-size: 11px; font-weight: bold;">{{ $eks->nomor_barcode }}</div>

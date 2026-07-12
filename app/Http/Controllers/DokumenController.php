@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\DokumenAdministrasi;
+use App\Http\Requests\StoreManagedDocumentRequest;
+use App\Http\Requests\UpdateManagedDocumentRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -67,17 +69,8 @@ class DokumenController extends Controller
         return view('dokumen.form');
     }
 
-    public function store(Request $request)
+    public function store(StoreManagedDocumentRequest $request)
     {
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'kategori_dokumen' => 'required|string',
-            'versi' => 'required|string|max:50',
-            'masa_berlaku_sampai' => 'nullable|date',
-            'deskripsi' => 'nullable|string',
-            'file' => 'required|file|mimes:pdf,jpeg,png,jpg|max:10240', // 10MB
-        ]);
-
         $file = $request->file('file');
         $path = $file->store('private/dokumen'); // Private storage
 
@@ -103,22 +96,13 @@ class DokumenController extends Controller
         return view('dokumen.form', compact('dokumen'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateManagedDocumentRequest $request, $id)
     {
         // Fitur Versioning: Saat update, kita tidak merubah file lama. Kita arsipkan yg lama, bikin yg baru menimpa ID.
         // Wait, the easier standard way:
         // Update the current record's details. If a NEW file is uploaded, we clone the CURRENT details to a new child record (Archive), 
         // then update the MAIN record with the new file and new version.
         
-        $request->validate([
-            'judul' => 'required|string|max:255',
-            'kategori_dokumen' => 'required|string',
-            'versi' => 'required|string|max:50',
-            'masa_berlaku_sampai' => 'nullable|date',
-            'deskripsi' => 'nullable|string',
-            'file' => 'nullable|file|mimes:pdf,jpeg,png,jpg|max:10240',
-        ]);
-
         try {
             DB::beginTransaction();
             $dokumenUtama = DokumenAdministrasi::findOrFail($id);

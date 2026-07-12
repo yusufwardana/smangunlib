@@ -23,7 +23,7 @@ class SystemInfoService
             'laravel_version' => app()->version(),
             'php_version' => phpversion(),
             'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
-            'mysql_version' => DB::select("select version() as version")[0]->version ?? 'Unknown',
+            'mysql_version' => $this->getDatabaseVersion(),
             'memory_limit' => ini_get('memory_limit'),
             'max_execution_time' => ini_get('max_execution_time'),
             'max_upload_size' => ini_get('upload_max_filesize'),
@@ -54,11 +54,29 @@ class SystemInfoService
 
     public function getDatabaseInfo()
     {
+        $connection = DB::connection();
+
+        if ($connection->getDriverName() === 'sqlite') {
+            $tables = DB::select("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'");
+            $pageSize = DB::select('PRAGMA page_size')[0]->page_size ?? 0;
+            $pageCount = DB::select('PRAGMA page_count')[0]->page_count ?? 0;
+
+            return [
+                'total_tables' => count($tables),
+                'size_mb' => round(($pageSize * $pageCount) / 1024 / 1024, 2),
+                'charset' => 'UTF-8',
+                'collation' => 'binary',
+            ];
+        }
+
         // Mendapatkan total table dan size di MySQL
-        $dbName = env('DB_DATABASE');
+        $dbName = $connection->getDatabaseName();
         $tables = DB::select('SHOW TABLES');
-        $sizeQuery = DB::select("SELECT SUM(data_length + index_length) / 1024 / 1024 AS size_mb FROM information_schema.TABLES WHERE table_schema = ?", [$dbName]);
-        
+        $sizeQuery = DB::select(
+            'SELECT SUM(data_length + index_length) / 1024 / 1024 AS size_mb FROM information_schema.TABLES WHERE table_schema = ?',
+            [$dbName]
+        );
+
         $dbSize = $sizeQuery[0]->size_mb ?? 0;
         
         return [
@@ -103,6 +121,15 @@ class SystemInfoService
     private function checkSession()
     {
         return session()->has('_token') ? 'ok' : 'warning';
+    }
+
+    private function getDatabaseVersion(): string
+    {
+        if (DB::connection()->getDriverName() === 'sqlite') {
+            return DB::select('select sqlite_version() as version')[0]->version ?? 'Unknown';
+        }
+
+        return DB::select('select version() as version')[0]->version ?? 'Unknown';
     }
 
     private function formatBytes($bytes, $precision = 2)

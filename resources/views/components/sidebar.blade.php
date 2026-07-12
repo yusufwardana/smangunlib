@@ -48,6 +48,11 @@
                 <i class="fa-solid fa-gear"></i> <span>Pengaturan Sistem</span>
             </a>
         </li>
+        <li>
+            <a href="{{ route('system.settings.index') }}" class="{{ request()->routeIs('system.settings.*') || request()->routeIs('system.contents.*') || request()->routeIs('system.menus.*') || request()->routeIs('system.media.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-sliders"></i> <span>Konten & Identitas</span>
+            </a>
+        </li>
         
         <li class="mt-5">
             <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();" class="text-danger">
