@@ -98,7 +98,7 @@
                         <input type="password" name="password" class="form-control" required>
                     </div>
                     <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember" value="1">
                         <label class="form-check-label" for="remember">Ingat Saya</label>
                     </div>
                     <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Masuk</button>

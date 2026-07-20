@@ -56,7 +56,10 @@ class BackupController extends Controller
     public function download($id)
     {
         $backup = Backup::findOrFail($id);
-        $path = storage_path('app/backups/' . $backup->nama_file);
+        // Validasi nama file mencegah path traversal
+        $namaFile = basename($backup->nama_file);
+        $path = storage_path('app/backups/' . $namaFile);
+        
         if (File::exists($path)) {
             return response()->download($path);
         }
@@ -66,7 +69,10 @@ class BackupController extends Controller
     public function destroy($id)
     {
         $backup = Backup::findOrFail($id);
-        $path = storage_path('app/backups/' . $backup->nama_file);
+        // Validasi nama file mencegah path traversal
+        $namaFile = basename($backup->nama_file);
+        $path = storage_path('app/backups/' . $namaFile);
+        
         if (File::exists($path)) {
             File::delete($path);
         }

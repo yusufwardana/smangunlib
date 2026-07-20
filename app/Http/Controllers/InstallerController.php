@@ -185,7 +185,8 @@ class InstallerController extends Controller
 
         $user->assignRole('super_admin');
 
-        session(['admin_email' => $user->email, 'admin_password' => $request->password]);
+        // Simpan hanya email, TIDAK menyimpan password di session
+        session(['admin_email' => $user->email]);
 
         return redirect()->route('installer.config');
     }
@@ -214,11 +215,10 @@ class InstallerController extends Controller
         File::put(storage_path('app/installed'), date('Y-m-d H:i:s'));
         
         $email = session('admin_email');
-        $password = session('admin_password');
 
         // Clear installer session
-        session()->forget(['db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'app_name', 'app_url', 'admin_email', 'admin_password']);
+        session()->forget(['db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'app_name', 'app_url', 'admin_email']);
 
-        return view('installer.finish', compact('email', 'password'));
+        return view('installer.finish', compact('email'));
     }
 }

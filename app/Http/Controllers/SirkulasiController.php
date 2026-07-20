@@ -16,8 +16,6 @@ use Yajra\DataTables\Facades\DataTables;
 
 class SirkulasiController extends Controller
 {
-    private $tarifDenda = 1000; // Rp 1.000 per hari per buku
-
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -94,10 +92,11 @@ class SirkulasiController extends Controller
             
             $anggota = Anggota::findOrFail($request->anggota_id);
             
-            // Cek limit peminjaman (misal max 3 buku)
+            // Cek limit peminjaman dari Setting
+            $maksimalPinjam = \App\Models\Setting::get('maksimal_pinjam') ?: 3;
             $sedangDipinjam = Peminjaman::where('anggota_id', $anggota->id)->where('status', 'dipinjam')->count();
-            if ($sedangDipinjam + count($request->eksemplar_ids) > 3) {
-                return back()->with('error', 'Anggota ini melebihi limit peminjaman maksimal (3 buku).');
+            if ($sedangDipinjam + count($request->eksemplar_ids) > $maksimalPinjam) {
+                return back()->with('error', "Anggota ini melebihi limit peminjaman maksimal ($maksimalPinjam buku).");
             }
 
             // Cek apakah ada denda belum lunas
@@ -109,12 +108,14 @@ class SirkulasiController extends Controller
             // Create Transaksi
             $nomorTransaksi = 'TRX-' . date('Ymd') . '-' . strtoupper(uniqid());
             
+            $lamaPinjam = \App\Models\Setting::get('lama_pinjam_default') ?: 7;
+
             $peminjaman = Peminjaman::create([
                 'nomor_transaksi' => $nomorTransaksi,
                 'anggota_id' => $anggota->id,
                 'user_id' => auth()->id(), // Pustakawan
                 'tanggal_pinjam' => Carbon::today(),
-                'due_date' => Carbon::today()->addDays(7), // Default pinjam 7 hari
+                'due_date' => Carbon::today()->addDays($lamaPinjam),
                 'status' => 'dipinjam',
                 'keterangan' => $request->keterangan
             ]);
@@ -193,9 +194,10 @@ class SirkulasiController extends Controller
                     }
 
                     // Logika Denda
+                    $tarifDenda = \App\Models\Setting::get('denda_per_hari') ?: 1000;
                     $dendaTotal = 0;
                     if ($keterlambatan > 0) {
-                        $dendaTotal += ($keterlambatan * $this->tarifDenda);
+                        $dendaTotal += ($keterlambatan * $tarifDenda);
                     }
                     if ($kondisi == 'hilang') {
                         $dendaTotal += ($eksemplar->harga ?? 50000); // Denda harga buku jika ada
@@ -206,7 +208,7 @@ class SirkulasiController extends Controller
                             'detail_peminjaman_id' => $detail->id,
                             'anggota_id' => $peminjaman->anggota_id,
                             'jumlah_hari_terlambat' => $keterlambatan,
-                            'tarif_per_hari' => $this->tarifDenda,
+                            'tarif_per_hari' => $tarifDenda,
                             'total_denda' => $dendaTotal,
                             'status_pembayaran' => 'belum_lunas',
                             'user_id' => auth()->id() // Petugas yg mencatat
@@ -235,7 +237,8 @@ class SirkulasiController extends Controller
     {
         try {
             DB::beginTransaction();
-            $peminjaman = Peminjaman::findOrFail($id);
+            // Gunakan lockForUpdate untuk mencegah race condition
+            $peminjaman = Peminjaman::lockForUpdate()->findOrFail($id);
             
             if ($peminjaman->perpanjangan_count >= 1) {
                 throw new \Exception('Batas maksimal perpanjangan sudah habis (1x).');
