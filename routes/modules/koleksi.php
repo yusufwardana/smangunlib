@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Koleksi\BukuController;
+use App\Http\Controllers\PlaceholderController;
 
 Route::middleware(['auth'])->prefix('koleksi')->name('koleksi.')->group(function () {
     
@@ -35,5 +36,10 @@ Route::middleware(['auth'])->prefix('koleksi')->name('koleksi.')->group(function
         ->middleware('menu:koleksi.buku.print')
         ->name('buku.print_barcode');
 
-    // Nanti ditambahkan route Kategori, Rak, Eksemplar dll
+    // Placeholder routes — fitur dalam pengembangan
+    Route::get('kategori', [PlaceholderController::class, 'index'])->name('kategori.index')->middleware('menu:koleksi.kategori.view');
+    Route::get('rak', [PlaceholderController::class, 'index'])->name('rak.index')->middleware('menu:koleksi.rak.view');
+    Route::get('penulis', [PlaceholderController::class, 'index'])->name('penulis.index')->middleware('menu:koleksi.penulis.view');
+    Route::get('penerbit', [PlaceholderController::class, 'index'])->name('penerbit.index')->middleware('menu:koleksi.penerbit.view');
+    Route::get('inventaris', [PlaceholderController::class, 'index'])->name('inventaris.index')->middleware('menu:koleksi.inventaris.view');
 });

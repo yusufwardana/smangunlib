@@ -75,7 +75,13 @@ class AnggotaController extends Controller
             ]);
             
             // Assign role based on tipe_anggota
-            $user->assignRole($data['tipe_anggota'] == 'tendik' ? 'pustakawan' : $data['tipe_anggota']);
+            $roleName = $data['tipe_anggota'];
+            if ($roleName === 'tendik') {
+                $roleName = 'pustakawan';
+            }
+            if (\Spatie\Permission\Models\Role::where('name', $roleName)->exists()) {
+                $user->assignRole($roleName);
+            }
 
             // Upload Foto
             $fotoPath = null;
@@ -138,7 +144,13 @@ class AnggotaController extends Controller
                 $anggota->user->update($userData);
                 
                 // Sync Role
-                $anggota->user->syncRoles([$data['tipe_anggota'] == 'tendik' ? 'pustakawan' : $data['tipe_anggota']]);
+                $roleName = $data['tipe_anggota'];
+                if ($roleName === 'tendik') {
+                    $roleName = 'pustakawan';
+                }
+                if (\Spatie\Permission\Models\Role::where('name', $roleName)->exists()) {
+                    $anggota->user->syncRoles([$roleName]);
+                }
             }
 
             // Update Foto

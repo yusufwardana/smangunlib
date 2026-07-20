@@ -13,13 +13,13 @@ class RedirectIfInstalled
         // Jika aplikasi SUDAH di-install, blokir akses installer sepenuhnya.
         // Layer 1: file marker. Layer 2: cek apakah sudah ada user di DB.
         if (file_exists(storage_path('app/installed'))) {
-            abort(403, 'Installer dinonaktifkan. Aplikasi sudah terinstal.');
+            return redirect()->guest(route('login'));
         }
 
         // ponytail: fallback DB check — upgrade ke signed token jika perlu re-install flow
         try {
             if (\App\Models\User::exists()) {
-                abort(403, 'Installer dinonaktifkan. Database sudah memiliki data.');
+                return redirect()->guest(route('login'));
             }
         } catch (\Exception $e) {
             // DB belum tersedia (fresh install), lanjutkan

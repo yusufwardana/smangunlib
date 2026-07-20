@@ -46,7 +46,7 @@ class PermissionServiceTest extends TestCase
         $this->assertArrayHasKey('view', PermissionService::actions());
         $this->assertArrayHasKey('export_pdf', PermissionService::actions());
         $this->assertArrayHasKey('super_admin', PermissionService::roles());
-        $this->assertCount(7, PermissionService::roles());
+        $this->assertCount(8, PermissionService::roles());
     }
 
     /** @test */

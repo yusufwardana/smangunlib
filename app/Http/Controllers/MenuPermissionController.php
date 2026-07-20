@@ -6,7 +6,7 @@ use App\Models\AuditLog;
 use App\Services\ActivityLogger;
 use App\Services\PermissionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -32,7 +32,7 @@ class MenuPermissionController extends Controller
     private function authorizeManage(): void
     {
         abort_unless(
-            (bool) Auth::user()?->can('manage', \App\Models\Menu::class),
+            Gate::allows('manage', \App\Models\Menu::class),
             403,
             'Anda tidak memiliki hak akses.'
         );
@@ -80,7 +80,7 @@ class MenuPermissionController extends Controller
 
         $validated = $request->validate([
             'permissions'   => ['array'],
-            'permissions.*' => ['string'],
+            'permissions.*' => ['required', 'string', 'max:120'],
         ]);
 
         // Super Admin tidak boleh dibatasi (selalu punya seluruh akses).
@@ -114,8 +114,12 @@ class MenuPermissionController extends Controller
         $this->authorizeManage();
 
         $validated = $request->validate([
-            'source_role_id' => ['required', 'exists:roles,id', 'different:'.$role->id],
+            'source_role_id' => ['required', 'integer', 'exists:roles,id'],
+        ], [
+            'source_role_id.different' => 'Role sumber tidak boleh sama dengan role tujuan.',
         ]);
+
+        abort_if((int) $validated['source_role_id'] === $role->id, 422, 'Role sumber tidak boleh sama dengan role tujuan.');
 
         if ($role->name === 'super_admin') {
             return back()->with('info', 'Super Admin selalu memiliki seluruh hak akses.');

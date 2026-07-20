@@ -40,7 +40,16 @@
                             </span>
                             <i class="fa-solid fa-angle-down small"></i>
                         </a>
-                        <ul class="collapse list-unstyled ps-3" id="{{ $collapseId }}">
+                        @php
+                            $isParentActive = false;
+                            foreach ($item['children'] as $child) {
+                                if ($child['route'] && request()->routeIs($child['route'])) {
+                                    $isParentActive = true;
+                                    break;
+                                }
+                            }
+                        @endphp
+                        <ul class="collapse{{ $isParentActive ? ' show' : '' }} list-unstyled ps-3" id="{{ $collapseId }}">
                             @foreach ($item['children'] as $child)
                                 <li>
                                     <a href="{{ $child['url'] }}"
@@ -90,7 +99,7 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="">
+                <a href="{{ route('sirkulasi.denda.index') }}" class="{{ request()->routeIs('sirkulasi.denda.*') ? 'active' : '' }}">
                     <i class="fa-solid fa-money-bill-wave"></i> <span>Denda & Keterlambatan</span>
                 </a>
             </li>

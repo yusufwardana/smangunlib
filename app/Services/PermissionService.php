@@ -233,7 +233,11 @@ class PermissionService
     private function resolveUrl(Menu $menu): string
     {
         if ($menu->route && Route::has($menu->route)) {
-            return route($menu->route);
+            try {
+                return route($menu->route);
+            } catch (\Exception $e) {
+                // route requires parameters not available here
+            }
         }
 
         return $menu->url ?: '#';
@@ -265,7 +269,9 @@ class PermissionService
         $valid = array_keys($this->permissionMenuMap());
         $filtered = array_values(array_intersect($permissionNames, $valid));
 
-        $role->syncPermissions($filtered);
+        DB::transaction(function () use ($role, $filtered) {
+            $role->syncPermissions($filtered);
+        });
 
         $this->clearCache();
     }
@@ -275,7 +281,9 @@ class PermissionService
      */
     public function copyPermissions(Role $source, Role $target): void
     {
-        $target->syncPermissions($source->permissions);
+        DB::transaction(function () use ($source, $target) {
+            $target->syncPermissions($source->permissions);
+        });
         $this->clearCache();
     }
 
@@ -284,7 +292,9 @@ class PermissionService
      */
     public function resetPermissions(Role $role): void
     {
-        $role->syncPermissions([]);
+        DB::transaction(function () use ($role) {
+            $role->syncPermissions([]);
+        });
         $this->clearCache();
     }
 
