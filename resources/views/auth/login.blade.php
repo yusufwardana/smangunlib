@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SMANGUNLIB</title>
+    @if(theme_asset('favicon'))
+        <link rel="icon" href="{{ theme_asset('favicon') }}">
+    @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
+
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -30,7 +34,23 @@
         @media (max-width: 900px) { .login-wrap { grid-template-columns: 1fr; } .login-hero { min-height: 360px; } }
         @media (max-width: 575.98px) { .login-hero, .login-card .card-body { padding: 30px 24px; } .login-stats { grid-template-columns: 1fr; } }
     </style>
+
+    {{-- ===== Login Theme override dari Theme Manager ===== --}}
+    <style>
+        @if(theme('login.background_image'))
+            body { background: {{ theme('login.overlay_color', 'rgba(15,23,42,.55)') }}, url('{{ theme_asset('login.background_image') }}') center/cover fixed !important; }
+        @elseif(theme('login.background_color'))
+            body { background: {{ theme('login.background_color') }} !important; }
+        @endif
+        @if(theme('login.card_color'))
+            .login-card { background: {{ theme('login.card_color') }} !important; }
+        @endif
+        @if(theme('login.button_color'))
+            .btn-primary { background: {{ theme('login.button_color') }} !important; box-shadow: none !important; }
+        @endif
+    </style>
 </head>
+
 <body>
     <main class="login-shell">
         <div class="login-wrap">

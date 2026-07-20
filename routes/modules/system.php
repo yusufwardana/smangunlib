@@ -9,11 +9,28 @@ use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\LandingContentController;
 use App\Http\Controllers\LandingMenuController;
 use App\Http\Controllers\MediaManagerController;
+use App\Http\Controllers\ThemeController;
+use App\Http\Controllers\MenuPermissionController;
 
 Route::middleware(['auth', 'role:super_admin'])->prefix('system')->name('system.')->group(function () {
     
     // System Info
     Route::get('/info', [SystemInfoController::class, 'index'])->name('info');
+
+    /*
+     |----------------------------------------------------------------------
+     | Modul Pengaturan Hak Akses Menu (RBAC)
+     |----------------------------------------------------------------------
+     | Hanya Super Admin. Mengatur matriks pohon menu x aksi per role,
+     | copy/reset permission, rebuild & clear cache, serta audit log.
+     */
+    Route::get('/permissions', [MenuPermissionController::class, 'index'])->name('permissions.index');
+    Route::get('/permissions/audit', [MenuPermissionController::class, 'audit'])->name('permissions.audit');
+    Route::post('/permissions/cache/rebuild', [MenuPermissionController::class, 'rebuild'])->name('permissions.rebuild');
+    Route::post('/permissions/cache/clear', [MenuPermissionController::class, 'clearCache'])->name('permissions.clear-cache');
+    Route::put('/permissions/{role}', [MenuPermissionController::class, 'update'])->name('permissions.update');
+    Route::post('/permissions/{role}/copy', [MenuPermissionController::class, 'copy'])->name('permissions.copy');
+    Route::post('/permissions/{role}/reset', [MenuPermissionController::class, 'reset'])->name('permissions.reset');
     
     // License
     Route::get('/license', [LicenseController::class, 'index'])->name('license');
@@ -52,4 +69,12 @@ Route::middleware(['auth', 'role:super_admin|kepala_perpustakaan'])->prefix('sys
     Route::get('/media', [MediaManagerController::class, 'index'])->name('media.index');
     Route::post('/media', [MediaManagerController::class, 'store'])->name('media.store');
     Route::delete('/media/{media}', [MediaManagerController::class, 'destroy'])->name('media.destroy');
+
+    // Theme Manager
+    Route::get('/theme', [ThemeController::class, 'index'])->name('theme.index');
+    Route::post('/theme', [ThemeController::class, 'update'])->name('theme.update');
+    Route::post('/theme/preview', [ThemeController::class, 'preview'])->name('theme.preview');
+    Route::post('/theme/reset', [ThemeController::class, 'reset'])->name('theme.reset');
+    Route::get('/theme/export', [ThemeController::class, 'export'])->name('theme.export');
+    Route::post('/theme/import', [ThemeController::class, 'import'])->name('theme.import');
 });

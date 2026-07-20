@@ -2,15 +2,24 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ApplicationSmokeTest extends TestCase
 {
-    public function test_home_redirect_matches_installation_state(): void
-    {
-        $expected = file_exists(storage_path('app/installed')) ? '/landing' : '/install';
+    use RefreshDatabase;
 
-        $this->get('/')->assertRedirect($expected);
+    public function test_home_matches_installation_state(): void
+    {
+        if (file_exists(storage_path('app/installed'))) {
+            // Setelah terinstall, landing page publik tampil langsung di "/".
+            $this->get('/')->assertOk();
+
+            return;
+        }
+
+        // Belum terinstall: seluruh rute non-installer diarahkan ke installer.
+        $this->get('/')->assertRedirect('/install');
     }
 
     public function test_installer_route_matches_installation_state(): void

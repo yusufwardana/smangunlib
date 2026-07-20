@@ -20,6 +20,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Registrasi Policy modul Theme Manager
+        Gate::policy(\App\Models\ThemeSetting::class, \App\Policies\ThemePolicy::class);
+
+        // Registrasi Policy modul Pengaturan Hak Akses Menu (RBAC)
+        Gate::policy(\App\Models\Menu::class, \App\Policies\MenuPermissionPolicy::class);
+
         // Super Admin secara implisit mendapat seluruh akses (Gate interception)
         Gate::before(function ($user, $ability) {
             return $user->hasRole('super_admin') ? true : null;

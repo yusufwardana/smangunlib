@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Mendaftarkan global middleware
         $middleware->web(append: [
             \App\Http\Middleware\CheckIfInstalled::class,
+            \App\Http\Middleware\LoadTheme::class,
         ]);
 
         // Mendaftarkan alias middleware RBAC kustom
@@ -26,6 +27,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role.pustakawan' => \App\Http\Middleware\Role\PustakawanMiddleware::class,
             'role.guru' => \App\Http\Middleware\Role\GuruMiddleware::class,
             'role.siswa' => \App\Http\Middleware\Role\SiswaMiddleware::class,
+
+            // RBAC Menu Permission: cek hak akses berbasis permission menu
+            'menu' => \App\Http\Middleware\CheckMenuPermission::class,
             
             // Spatie default middleware
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,

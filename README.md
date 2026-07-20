@@ -2,6 +2,9 @@
 
 SMANGUNLIB adalah aplikasi perpustakaan sekolah berbasis Laravel untuk katalog buku, anggota, sirkulasi, dokumen administrasi, literasi, laporan, landing page, backup, lisensi, dan pengaturan sistem.
 
+> **Theme Manager** (System Settings → Theme Manager) memungkinkan administrator mengubah tampilan aplikasi & landing page tanpa mengubah kode. Lihat dokumentasi lengkap di [`docs/THEME_MANAGER.md`](docs/THEME_MANAGER.md).
+
+
 ## Kebutuhan Server
 
 - Apache shared hosting cPanel.

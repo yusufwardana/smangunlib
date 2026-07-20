@@ -56,15 +56,74 @@
                         <li class="nav-item"><a class="nav-link" href="{{ $menu->url }}"><i class="bi {{ $menu->icon }} d-lg-none me-1"></i>{{ $menu->name }}</a></li>
                     @empty
                         <li class="nav-item"><a class="nav-link" href="#beranda">Beranda</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#profil">Profil</a></li>
                         <li class="nav-item"><a class="nav-link" href="#koleksi">Koleksi</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#layanan">Layanan</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#literasi">Literasi</a></li>
                         <li class="nav-item"><a class="nav-link" href="#berita">Berita</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#berita">Pengumuman</a></li>
                         <li class="nav-item"><a class="nav-link" href="#kontak">Kontak</a></li>
                     @endforelse
                 </ul>
-                <a class="btn btn-primary btn-sm px-4" href="{{ route('login') }}"><i class="bi bi-box-arrow-in-right me-2"></i>Login</a>
+
+                @guest
+                    {{-- Guest: hanya menu Login yang tampil, menu Dashboard disembunyikan --}}
+                    <a class="btn btn-primary btn-sm px-4" href="{{ route('login') }}"><i class="bi bi-box-arrow-in-right me-2"></i>Login</a>
+                @endguest
+
+                @auth
+                    @php
+                        $authUser = auth()->user();
+                        $authName = $authUser->name ?? 'Pengguna';
+                        $authRole = $authUser->roles->first()->name ?? 'pengguna';
+                        $authRoleLabel = ucwords(str_replace('_', ' ', $authRole));
+                        $avatarUrl = 'https://ui-avatars.com/api/?name='.urlencode($authName).'&background=0f766e&color=fff';
+                    @endphp
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        {{-- Tombol Dashboard menggantikan tombol Login --}}
+                        <a class="btn btn-primary btn-sm px-3" href="{{ route('dashboard') }}"><i class="bi bi-speedometer2 me-1"></i>Dashboard</a>
+
+                        {{-- Notifikasi --}}
+                        <a class="btn btn-outline-primary btn-sm" href="{{ route('dashboard') }}" aria-label="Notifikasi"><i class="bi bi-bell"></i></a>
+
+                        {{-- Dropdown Profil --}}
+                        <div class="dropdown">
+                            <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ $avatarUrl }}" alt="Avatar {{ $authName }}" class="rounded-circle" width="36" height="36">
+                                <span class="ms-2 d-none d-lg-inline text-start">
+                                    <strong class="d-block" style="font-size:.85rem;line-height:1">{{ $authName }}</strong>
+                                    <small class="text-muted" style="font-size:.7rem">{{ $authRoleLabel }}</small>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                <li class="px-3 py-2 border-bottom">
+                                    <strong class="d-block">{{ $authName }}</strong>
+                                    <small class="text-muted">{{ $authRoleLabel }}</small>
+                                </li>
+                                <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+
+                                {{-- Shortcut sesuai role --}}
+                                @if($authUser->hasRole('siswa'))
+                                    <li><a class="dropdown-item" href="{{ route('koleksi.buku.index') }}"><i class="bi bi-journal-bookmark me-2"></i>Peminjaman Saya</a></li>
+                                @endif
+                                @if($authUser->hasAnyRole(['pustakawan', 'kepala_perpustakaan', 'super_admin']))
+                                    <li><a class="dropdown-item" href="{{ route('koleksi.buku.index') }}"><i class="bi bi-book me-2"></i>Manajemen Buku</a></li>
+                                @endif
+                                @if($authUser->hasAnyRole(['super_admin', 'kepala_sekolah', 'kepala_perpustakaan']))
+                                    <li><a class="dropdown-item" href="{{ route('laporan.index') }}"><i class="bi bi-graph-up me-2"></i>Laporan</a></li>
+                                @endif
+
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="#" onclick="event.preventDefault(); document.getElementById('logout-form-landing').submit();">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </a>
+                                    <form id="logout-form-landing" action="{{ route('logout') }}" method="POST" class="d-none">@csrf</form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                @endauth
             </div>
         </div>
     </nav>
@@ -75,6 +134,21 @@
         <div class="hero-orb hero-orb-one"></div>
         <div class="hero-orb hero-orb-two"></div>
         <div class="container">
+            <nav aria-label="breadcrumb" class="landing-breadcrumb">
+                <ol class="breadcrumb small mb-3">
+                    <li class="breadcrumb-item"><a href="{{ route('landing') }}">Beranda</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Landing Page</li>
+                </ol>
+            </nav>
+            <script type="application/ld+json">
+            {
+                "@@context": "https://schema.org",
+                "@@type": "BreadcrumbList",
+                "itemListElement": [
+                    { "@@type": "ListItem", "position": 1, "name": "Beranda", "item": "{{ route('landing') }}" }
+                ]
+            }
+            </script>
             <div class="running-text" role="status" aria-label="Pengumuman berjalan">
                 <i class="bi bi-megaphone"></i>
                 <div><span>{{ $setting('landing.running_text', 'Pengumuman: Pengembalian buku semester ini paling lambat Jumat pukul 14.00 WIB. Ikuti juga kegiatan 15 Menit Membaca setiap Selasa pagi.') }}</span></div>

@@ -56,6 +56,7 @@ class AuthenticatedPageSmokeTest extends TestCase
 
         $urls = [
             '/',
+            '/dashboard',
             '/keanggotaan/anggota',
             '/koleksi/buku',
             '/sirkulasi',

@@ -6,6 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Sistem Manajemen Perpustakaan')</title>
 
+    {{-- Favicon dinamis dari Theme Manager --}}
+    @if(theme_asset('favicon'))
+        <link rel="icon" href="{{ theme_asset('favicon') }}">
+    @endif
+
+
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -173,8 +179,27 @@
         }
         .fade-in { animation: fadeIn 0.4s ease-out forwards; }
     </style>
+
+    {{-- ===== Theme Manager: override CSS variables dinamis dari database ===== --}}
+    <style id="theme-variables">
+        {!! $themeCss ?? '' !!}
+
+        body { font-family: var(--font-family, 'Inter', sans-serif); font-size: var(--font-size, 16px); }
+        #sidebar { background: var(--sidebar-color, #ffffff); width: var(--sidebar-width, 260px); min-width: var(--sidebar-width, 260px); max-width: var(--sidebar-width, 260px); }
+        .topbar { background: var(--navbar-color, #ffffff); }
+        .card { background: var(--card-color, #ffffff); border-radius: var(--border-radius, 1rem); }
+        a { color: var(--link-color, var(--primary-color)); }
+        a:hover { color: var(--hover-color, var(--secondary-color)); }
+        .btn-primary { background-color: var(--button-color, var(--primary-color)); border-color: var(--button-color, var(--primary-color)); }
+    </style>
+
+    {{-- Custom CSS tambahan dari admin --}}
+    @if(theme('custom.css'))
+        <style id="theme-custom-css">{!! theme('custom.css') !!}</style>
+    @endif
 </head>
-<body>
+<body data-theme-mode="{{ theme('general.mode', 'light') }}">
+
 
     <div id="wrapper">
         <!-- Sidebar -->
@@ -207,5 +232,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @stack('scripts')
+
+    {{-- Custom JS tambahan dari admin (Theme Manager) --}}
+    @if(theme('custom.js'))
+        <script id="theme-custom-js">{!! theme('custom.js') !!}</script>
+    @endif
 </body>
 </html>
+

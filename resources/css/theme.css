@@ -1,0 +1,126 @@
+/*
+ | Theme Manager - CSS Variables layer
+ |-------------------------------------------------------------------
+ | Berkas ini memetakan CSS variables (yang di-inject dari database melalui
+ | ThemeService::cssVariables()) ke komponen Bootstrap 5 & layout aplikasi.
+ |
+ | Nilai variabel diisi di runtime pada <style id="theme-variables"> (layout)
+ | sehingga file ini cukup mereferensikan var(--x) dengan fallback default.
+ |
+ | Integrasi Vite: file ini terdaftar pada vite.config.js dan bisa di-import
+ | via @vite('resources/css/theme.css') bila layout beralih ke bundling Vite.
+ */
+
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3f37c9;
+    --success-color: #2a9d8f;
+    --danger-color: #e63946;
+    --warning-color: #f77f00;
+    --info-color: #4895ef;
+    --bg-color: #f8f9fa;
+    --sidebar-color: #ffffff;
+    --navbar-color: #ffffff;
+    --card-color: #ffffff;
+    --footer-color: #ffffff;
+    --text-color: #2b2d42;
+    --link-color: var(--primary-color);
+    --hover-color: var(--secondary-color);
+    --button-color: var(--primary-color);
+    --font-family: 'Inter', sans-serif;
+    --font-size: 16px;
+    --border-radius: 1rem;
+    --sidebar-width: 260px;
+    --container-width: 1320px;
+}
+
+/* ===== Bootstrap 5 CSS variable bridge ===== */
+:root {
+    --bs-primary: var(--primary-color);
+    --bs-secondary: var(--secondary-color);
+    --bs-success: var(--success-color);
+    --bs-danger: var(--danger-color);
+    --bs-warning: var(--warning-color);
+    --bs-info: var(--info-color);
+    --bs-body-bg: var(--bg-color);
+    --bs-body-color: var(--text-color);
+    --bs-body-font-family: var(--font-family);
+}
+
+/* ===== Base ===== */
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+a { color: var(--link-color); }
+a:hover { color: var(--hover-color); }
+
+/* ===== Buttons ===== */
+.btn-primary {
+    --bs-btn-bg: var(--button-color);
+    --bs-btn-border-color: var(--button-color);
+    --bs-btn-hover-bg: var(--hover-color);
+    --bs-btn-hover-border-color: var(--hover-color);
+}
+
+/* Bentuk tombol (shape) - dikontrol oleh atribut pada <html>/<body> bila diperlukan */
+.theme-btn-pill .btn { border-radius: 50rem; }
+.theme-btn-square .btn { border-radius: 0; }
+.theme-btn-rounded .btn { border-radius: 0.5rem; }
+
+/* ===== Cards ===== */
+.card {
+    background: var(--card-color);
+    border-radius: var(--border-radius);
+}
+.theme-card-flat .card { box-shadow: none; border: 1px solid rgba(0,0,0,.075); }
+.theme-card-bordered .card { box-shadow: none; border: 1px solid rgba(0,0,0,.15); }
+.theme-card-glass .card {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* ===== Sidebar & Navbar ===== */
+#sidebar {
+    background: var(--sidebar-color);
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    max-width: var(--sidebar-width);
+}
+.topbar { background: var(--navbar-color); }
+.theme-navbar-blur .topbar {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ===== Layout ===== */
+.theme-layout-boxed #page-content-wrapper {
+    max-width: var(--container-width);
+    margin: 0 auto;
+}
+
+/* ===== Dark mode ===== */
+body[data-theme-mode="dark"] {
+    --bg-color: #0d1117;
+    --card-color: #161b22;
+    --sidebar-color: #161b22;
+    --navbar-color: #161b22;
+    --text-color: #e6edf3;
+}
+
+/* ===== Loading screen ===== */
+#theme-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-color);
+}

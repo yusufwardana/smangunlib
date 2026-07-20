@@ -32,7 +32,11 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::clear($key);
             $request->session()->regenerate();
-            return redirect()->intended('/');
+
+            // Jika sebelumnya user mengakses halaman terlindungi, kembalikan ke
+            // halaman tersebut (intended). Jika login langsung dari landing page
+            // tanpa intended, arahkan ke dashboard.
+            return redirect()->intended(route('dashboard'));
         }
 
         RateLimiter::hit($key, 60);
