@@ -71,6 +71,7 @@ class PermissionService
             'kepala_sekolah'       => 'Kepala Sekolah',
             'kepala_perpustakaan'  => 'Kepala Perpustakaan',
             'pustakawan'           => 'Pustakawan',
+            'tendik'               => 'Tendik',
             'guru'                 => 'Guru',
             'siswa'                => 'Siswa',
             'guest'                => 'Guest',
